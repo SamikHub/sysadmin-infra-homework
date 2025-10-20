@@ -1,0 +1,8 @@
+---
+- name: Configure Nginx + PHP-FPM
+  hosts: all
+  become: false
+  vars:
+    app_env: dev
+  roles:
+    - web

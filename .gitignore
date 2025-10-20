@@ -1,0 +1,9 @@
+.terraform/
+*.tfstate
+*.tfstate.backup
+__pycache__/
+*.retry
+*.log
+.ansible/
+*.DS_Store
+

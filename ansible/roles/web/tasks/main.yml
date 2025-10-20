@@ -1,0 +1,65 @@
+---
+- name: Ensure required packages are installed
+  ansible.builtin.package:
+    name:
+      - "{{ nginx_package }}"
+      - "{{ php_fpm_package }}"
+    state: present
+  notify:
+    - restart nginx
+    - restart php-fpm
+
+- name: Ensure web root exists
+  ansible.builtin.file:
+    path: "{{ web_root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Deploy Nginx configuration
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ nginx_conf_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart nginx
+
+- name: Deploy index.php
+  ansible.builtin.template:
+    src: index.php.j2
+    dest: "{{ web_root }}/index.php"
+    owner: www-data
+    group: www-data
+    mode: '0644'
+
+- name: Configure logrotate for Nginx
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/nginx
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      /var/log/nginx/*.log {
+          daily
+          missingok
+          rotate 14
+          compress
+          delaycompress
+          notifempty
+          create 0640 www-data adm
+          sharedscripts
+          postrotate
+              [ -s /run/nginx.pid ] && kill -USR1 `cat /run/nginx.pid`
+          endscript
+      }
+
+- name: Ensure services are started and enabled
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - "{{ nginx_package }}"
+    - "{{ php_fpm_package }}"
