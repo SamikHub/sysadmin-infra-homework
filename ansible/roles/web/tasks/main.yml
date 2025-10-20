@@ -57,4 +57,3 @@
     name: php8.4-fpm
     state: started
     enabled: true
-    
