@@ -1,65 +1,60 @@
 ---
 - name: Ensure required packages are installed
-  ansible.builtin.package:
+  become: true
+  ansible.builtin.apt:
     name:
-      - "{{ nginx_package }}"
-      - "{{ php_fpm_package }}"
+      - nginx
+      - php-fpm
+      - php-cli
+      - php-common
+      - php-json
+      - php-mbstring
+      - php-xml
+      - php-curl
+      - logrotate
     state: present
-  notify:
-    - restart nginx
-    - restart php-fpm
+    update_cache: yes
 
 - name: Ensure web root exists
+  become: true
   ansible.builtin.file:
-    path: "{{ web_root }}"
+    path: /var/www/html
     state: directory
     owner: www-data
     group: www-data
-    mode: '0755'
+    mode: "0755"
 
-- name: Deploy Nginx configuration
-  ansible.builtin.template:
-    src: nginx.conf.j2
-    dest: "{{ nginx_conf_path }}"
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart nginx
-
-- name: Deploy index.php
+- name: Copy index.php
+  become: true
   ansible.builtin.template:
     src: index.php.j2
-    dest: "{{ web_root }}/index.php"
+    dest: /var/www/html/index.php
     owner: www-data
     group: www-data
-    mode: '0644'
+    mode: "0644"
 
-- name: Configure logrotate for Nginx
-  ansible.builtin.copy:
-    dest: /etc/logrotate.d/nginx
+- name: Configure nginx
+  become: true
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/default
     owner: root
     group: root
-    mode: '0644'
-    content: |
-      /var/log/nginx/*.log {
-          daily
-          missingok
-          rotate 14
-          compress
-          delaycompress
-          notifempty
-          create 0640 www-data adm
-          sharedscripts
-          postrotate
-              [ -s /run/nginx.pid ] && kill -USR1 `cat /run/nginx.pid`
-          endscript
-      }
+    mode: "0644"
+  notify:
+    - restart nginx
 
-- name: Ensure services are started and enabled
+- name: Ensure nginx is running
+  become: true
   ansible.builtin.service:
-    name: "{{ item }}"
+    name: nginx
     state: started
     enabled: true
-  loop:
-    - "{{ nginx_package }}"
-    - "{{ php_fpm_package }}"
+
+- name: Ensure PHP-FPM is running
+  become: true
+  ansible.builtin.service:
+    name: php8.4-fpm
+    state: started
+    enabled: true
+
