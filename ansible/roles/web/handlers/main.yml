@@ -1,10 +1,10 @@
 ---
-- name: restart nginx
+- name: Restart nginx
   ansible.builtin.service:
-    name: "{{ nginx_package }}"
+    name: nginx
     state: restarted
 
-- name: restart php-fpm
+- name: Restart PHP-FPM
   ansible.builtin.service:
-    name: "{{ php_fpm_package }}"
+    name: php8.4-fpm
     state: restarted

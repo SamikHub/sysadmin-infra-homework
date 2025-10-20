@@ -6,3 +6,4 @@
     app_env: dev
   roles:
     - web
+    

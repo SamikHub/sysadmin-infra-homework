@@ -13,7 +13,7 @@
       - php-curl
       - logrotate
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Ensure web root exists
   become: true
@@ -57,4 +57,4 @@
     name: php8.4-fpm
     state: started
     enabled: true
-
+    
