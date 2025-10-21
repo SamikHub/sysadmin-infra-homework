@@ -71,10 +71,3 @@ Cleanup
 
 terraform destroy -auto-approve
 
-Author
-
-Sam Dovhyy
-DevOps Engineer
-s.dovhyy@gmail.com
-
-https://github.com/SamikHub
